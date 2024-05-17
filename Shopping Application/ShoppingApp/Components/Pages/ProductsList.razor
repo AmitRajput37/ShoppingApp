@@ -1,0 +1,150 @@
+﻿@page "/ProductsList"
+@using Microsoft.Maui.Controls
+
+<PageTitle>Products</PageTitle>
+
+<h3>Products List</h3>
+
+<div>
+    Search for Products
+    <div>
+        <input class="col-12" type="text" @bind="searchQuery" />
+        <button class="btn-primary" @onclick="SearchProduct">Search</button>
+    </div>
+</div>
+
+<div>
+    @foreach (var product in products)
+    {
+        <div @onclick="() => NavigateToProduct(product.Id)">
+            <img src="Images/@product.ImageUrl" alt="@product.Name" style="width: 100px; height: 100px;" />
+            <strong>@product.Name</strong> - @product.Price
+        </div>
+    }
+</div>
+
+<div>
+    @if (currentPage > 1)
+    {
+        <button @onclick="() => ChangePage(currentPage - 1)">Previous</button>
+    }
+
+    @for (int i = 1; i <= totalPages; i++)
+    {
+        var pageNumber = i;
+        <button @onclick="() => ChangePage(pageNumber)" class="@(pageNumber == currentPage ? "active" : "")">@pageNumber</button>
+    }
+
+    @if (currentPage < totalPages)
+    {
+        <button @onclick="() => ChangePage(currentPage + 1)">Next</button>
+    }
+</div>
+    
+
+
+
+@code {
+    private List<Product> products = new List<Product>();
+    //private List<Product> ProductList;
+    private string searchQuery = string.Empty;
+
+    public string JsonString = string.Empty;
+    public string Json = string.Empty;
+
+    private List<Product> ProductList = new List<Product>
+    {
+        new Product {Id=1, ImageUrl="samsung.jpg", Name="Samsung Galaxy s24 ultra", Price=118000, Description="Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray, 12GB, 256GB Storage)"},
+            new Product {Id=2, ImageUrl="iphone.jpg", Name="Iphone 15 Pro Max", Price=150000, Description="Apple iPhone 15 Pro Max (256 GB) - Black Titanium"},
+            new Product {Id=3, ImageUrl="refrigerator.jpg", Name="Samsung Refrigerator", Price=25000, Description="Samsung 183 L, 5 Star, Digital Inverter, Direct-Cool Single Door Refrigerator (RR20D2825HV/NL, Himalaya Poppy Blue, Base Stand Drawer, 2024 Model)"},
+            new Product {Id=4, ImageUrl="washing_machine.jpg", Name="LG Washing Machine", Price=20000, Description="LG 7 Kg 5 Star Inverter Touch panel Fully-Automatic Front Load Washing Machine with In-Built Heater (FHM1207SDM, Middle Black, Steam for Hygiene Wash)"},
+            new Product {Id=5, ImageUrl="apple_adapter.jpg", Name="Apple Adapter", Price=1699, Description="Apple 20W USB-C Power Adapter (for iPhone, iPad & AirPods)"},
+            new Product {Id=6, ImageUrl="microwave.jpg", Name="LG Microwave", Price=17990, Description="LG 32 L Convection Microwave Oven (MC3286BRUM, Black, 360° Motorised Rotisserie & Diet Fry)"},
+            new Product {Id=7, ImageUrl="godrej_ac.jpg", Name="Godrej AC", Price=28990, Description="Godrej 1 Ton 3 Star, 5-In-1 Convertible Cooling, Inverter Split AC (Copper, I-Sense Technology, 2023 Model, AC 1T EI 12TINV3R32-GWA Split, White)"},
+            new Product {Id=8, ImageUrl="chimney.jpg", Name="Faber Chimney", Price=20000, Description="Faber 90cm 1200 m3/hr, Autoclean Chimney, Filterless, 8Yr on Motor, 2Yr Comprehensive Warranty, Italian Design - Made in India (Hood Venice IN HC SC FL LG 90, Touch & Gesture Control, Light Grey)"},
+            new Product {Id=9, ImageUrl="samsung_refrigerator.jpg", Name="Samsung Double door Refrigerator", Price=109000, Description="Samsung 633 L, 3 Star, Frost Free, Double Door, Convertible 5-in-1 Digital Inverter, Side By Side Refrigerator with AI, WiFi & Water & Ice Dispenser (RS78CG8543S9HL, Silver, Refined Inox, 2024 Model)"},
+            new Product {Id=10, ImageUrl="extension.jpg", Name="Extension", Price=449, Description="GM 3060 E-Book 4 + 1 Power Strip Red & White Color 250 Volts with Master Switch, Indicator, Safety Shutter & 4 International sockets, Extension Cord for Home Appliances"},
+            new Product {Id=11, ImageUrl="scotch_brite.jpg", Name="Scotch Brite", Price=130, Description="Scotch-Brite Rubber Heavy Duty Hand gloves for Dishwashing, gardening, kitchen cleaning ( Inner cotton lining for comfort), 1 Pair"},
+            new Product {Id=12, ImageUrl="sports_watch.jpg", Name="Acnos digital watch", Price=2800, Description="Acnos® Premium Brand - A Digital Watch Shockproof Multi-Functional Automatic 5 Color Army Strap Waterproof Digital Sports Watch for Men's Kids Watch for Boys Watch for Men Pack of 1"},
+            new Product {Id=13, ImageUrl="tshirt.jpg", Name="Klub Fox Tshirt", Price=449, Description="Klub Fox Mens Regular Fit Half Sleeves Polo T-Shirts"},
+            new Product {Id=14, ImageUrl="helmet.jpg", Name="Sage Helmet", Price=879, Description="Sage Square Two Wheeler ISI Marked Guardian Cruiser Open Face Helmet for Unisex Adult (Extra - XL, Black Matte), ABS"},
+            new Product {Id=15, ImageUrl="tyre.jpg", Name="JK Tyre", Price=1165, Description="JK Tyre BLAZE BA22 90/100-10 Tubeless Scooter Tyre, Front & Rear"}
+            
+    };
+
+    //private List<Product> products = new List<Product>();
+    private int currentPage = 1;
+    private const int pageSize = 5;
+    private int totalPages;
+
+    protected override async Task OnInitializedAsync()
+    {      
+        totalPages = (int)Math.Ceiling(ProductList.Count / (double)pageSize);
+        LoadProducts();
+    }
+
+    private void LoadProducts()
+    {
+
+        var skip = (currentPage - 1) * pageSize;
+        products = ProductList.Skip(skip).Take(pageSize).ToList();
+
+        Json = JsonConvert.SerializeObject(ProductList);
+        Preferences.Default.Set("TotalProductsList", Json);
+
+        
+        StateHasChanged();
+    }
+
+    // private async Task OnScroll()
+    // {
+    //     var scrollInfo = await JS.InvokeAsync<ScrollInfo>("getScrollInfo", "product-list-container");
+
+    //     if (scrollInfo != null && scrollInfo.ScrollTop + scrollInfo.ClientHeight >= scrollInfo.ScrollHeight - 50)
+    //     {
+    //         PageLoad();
+    //     }
+    // }
+
+    // private class ScrollInfo
+    // {
+    //     public int ScrollTop { get; set; }
+    //     public int ScrollHeight { get; set; }
+    //     public int ClientHeight { get; set; }
+    //     public int WindowHeight { get; set; }
+    // }
+
+    [Inject]
+    private IJSRuntime JS { get; set; }
+
+    private async void SearchProduct()
+    {
+        //products = await ProductServices.GetProductsAsync(searchQuery);
+
+        StateHasChanged();
+
+        if (string.IsNullOrEmpty(searchQuery))
+        {
+            products = ProductList;
+        }
+        else
+        {
+            products = products.Where(p => p.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+    }
+
+    private void NavigateToProduct(int productId)
+    {
+        NavigationManager.NavigateTo($"/product/{productId}");
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages)
+        return;
+
+        currentPage = pageNumber;
+        LoadProducts();
+    }
+}

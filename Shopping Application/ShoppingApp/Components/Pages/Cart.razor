@@ -1,0 +1,97 @@
+﻿@page "/Cart"
+
+<PageTitle>Shopping Cart</PageTitle>
+
+<h3>Shopping Cart</h3>
+
+@if (CartService.CartItems == null || CartService.CartItems .Count == 0)
+{
+    <p>Your cart is empty.</p>
+}
+else
+{
+    <div class="table-wrapper" style="overflow-x: auto;">
+        <table class="grid">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in CartService.CartItems)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>
+                            <input class="col-12 col-form-label" type="number" @bind="item.Quantity" min="1" @onblur="() => UpdateQuantity(item)" />
+                        </td>
+                        <td>@item.UnitPrice.ToString("C", new CultureInfo("en-IN"))</td>
+                        <td>@(item.Quantity * item.UnitPrice)</td>
+                        <td>
+                            <button class="btn-secondary" @onclick="() => RemoveItem(item)">Remove</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p><strong>Total Price:</strong> @CartService.GetTotalPrice().ToString("C", new CultureInfo("en-IN"))</p>
+    <button class="btn-primary" @onclick="ProceedToCheckout">Proceed to Checkout</button>
+}
+
+@code {
+    //private List<Product> cartItems;
+    //private decimal totalPrice;
+
+    public string JsonString = string.Empty;
+    public string Json = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        //cartItems = LoadCartItems();
+
+        // JsonString = Preferences.Default.Get("CartProducts", string.Empty);
+        // cartItems = JsonConvert.DeserializeObject<List<Product>>(JsonString);
+
+        //CalculateTotalPrice();
+    }
+
+    private void LoadCartItems()
+    {
+        
+
+    }
+
+    private void UpdateQuantity(CartItem item)
+    {
+        // var cartItem = cartItems.FirstOrDefault(ci => ci.Id == item.Id);
+        // if (cartItem != null)
+        // {
+        //     cartItem.Quantity = item.Quantity;
+        //     CalculateTotalPrice();
+        // }
+        CartService.UpdateQuantity(item.ProductId, item.Quantity);
+    }
+
+    private void RemoveItem(CartItem item)
+    {
+        // cartItems.Remove(item);
+        // CalculateTotalPrice();
+        CartService.RemoveFromCart(item.ProductId);
+    }
+
+    // private void CalculateTotalPrice()
+    // {
+    //     totalPrice = cartItems.Sum(item => item.Quantity* item.Price);
+    // }
+
+    private void ProceedToCheckout()
+    {
+        NavigationManager.NavigateTo("/Checkout");
+    }
+}

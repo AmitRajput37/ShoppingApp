@@ -1,0 +1,91 @@
+﻿@page "/Checkout"
+
+<PageTitle>Checkout</PageTitle>
+
+<h3>Checkout</h3>
+
+<EditForm Model="@order" OnValidSubmit="SubmitOrder">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Customer Name:</label>
+        <InputText @bind-Value="order.CustomerName" />
+    </div>
+    <div>
+        <label>Customer Email:</label>
+        <InputText @bind-Value="order.CustomerEmail" />
+    </div>
+    <div>
+        <label>Shipping Address:</label>
+        <InputText @bind-Value="order.ShippingAddress" />
+    </div>
+    <div>
+        <label>Total Price:</label>
+        <p>@order.TotalPrice.ToString("C", new CultureInfo("en-IN"))</p>
+    </div>
+
+    <h4>Items</h4>
+
+    <ul>
+        @foreach (var item in order.Items)
+        {
+            <li>@item.ProductName - @item.Quantity x @item.UnitPrice.ToString("C", new CultureInfo("en-IN"))</li>
+        }
+    </ul>
+
+    <h4>Payment Information</h4>
+    <div>
+    <label>Credit Card Number:</label>
+    <InputText @bind-Value="order.CreditCardNumber" />
+    <ValidationMessage For="@(() => order.CreditCardNumber)" />
+    </div>
+    <div>
+    <label>Expiration Date (MM/YY):</label>
+    <InputText @bind-Value="order.ExpirationDate" />
+    <ValidationMessage For="@(() => order.ExpirationDate)" />
+    </div>
+    <div>
+    <label>CVV:</label>
+    <InputText @bind-Value="order.CVV" />
+    <ValidationMessage For="@(() => order.CVV)" />
+    </div>
+    
+
+    <button class="btn-primary" type="submit">Submit Order</button>
+</EditForm>
+
+@code {
+    private Order order = new Order();
+
+    protected override void OnInitialized()
+    {
+        // Load cart items into the order
+        order.Items = CartService.CartItems.Select(item => new OrderItem
+            {
+                ProductId = item.ProductId,
+                ProductName = item.ProductName,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
+            }).ToList();
+
+        order.TotalPrice = CartService.GetTotalPrice();
+    }
+
+    private async Task SubmitOrder()
+    {
+        //var response = await HttpClient.PostAsJsonAsync("api/Checkout", order);
+
+        // if (response.IsSuccessStatusCode)
+        // {
+        //confirmationMessage = await response.Content.ReadAsStringAsync();
+        CartService.ClearCart();
+        await App.Current.MainPage.DisplayAlert("Information","Your order placed successfully","Ok");
+        NavigationManager.NavigateTo("/ProductsList");
+        // }
+        // else
+        // {
+        //     confirmationMessage = "There was an error processing your order.";
+        // }
+    }
+}

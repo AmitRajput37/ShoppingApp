@@ -1,0 +1,111 @@
+﻿@page "/product/{productId:int}"
+
+<PageTitle>Product Details</PageTitle>
+
+<h3>Product Details</h3>
+
+<div>
+    <h2>@product.Name</h2>
+    <img src="Images/@product.ImageUrl" alt="@product.Name" style="width: 300px; height: 300px;" />
+    <p>@product.Description</p>
+    <p><strong>Price: </strong>@product.Price</p>
+    <button class="btn-primary" @onclick="() => AddToCart(product.Id)">Add to Cart</button>
+    <button class="btn-secondary" @onclick="GoBack">Back</button>
+</div>
+
+@code {
+    [Parameter] public int ProductId { get; set; }
+
+    private Product product;
+
+    public List<Product> ProductList = new List<Product>();
+    public List<Product> CartProducts = new List<Product>();
+
+    private int quantity = 1;
+
+    public string JsonString = string.Empty;
+    public string Json = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // List<Product> ProductList = new List<Product>
+        // {
+        //     new Product {Id=1, ImageUrl="samsung.jpg", Name="Samsung Galaxy s24 ultra", Price=118000, Description="Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray, 12GB, 256GB Storage)"},
+        //     new Product {Id=2, ImageUrl="iphone.jpg", Name="Apple Iphone 15 Pro Max", Price=150000, Description="Apple iPhone 15 Pro Max (256 GB) - Black Titanium"},
+        //     new Product {Id=3, ImageUrl="refrigerator.jpg", Name="Samsung Refrigerator", Price=25000, Description="Samsung 183 L, 5 Star, Digital Inverter, Direct-Cool Single Door Refrigerator (RR20D2825HV/NL, Himalaya Poppy Blue, Base Stand Drawer, 2024 Model)"},
+        //     new Product {Id=4, ImageUrl="washing_machine.jpg", Name="LG Washing Machine", Price=20000, Description="LG 7 Kg 5 Star Inverter Touch panel Fully-Automatic Front Load Washing Machine with In-Built Heater (FHM1207SDM, Middle Black, Steam for Hygiene Wash)"}
+        // };
+
+        //product = ProductList.Where(x => x.Id == ProductId).FirstOrDefault();
+
+        try
+        {
+            JsonString = Preferences.Default.Get("TotalProductsList", string.Empty);
+            ProductList = JsonConvert.DeserializeObject<List<Product>>(JsonString);
+
+            product = ProductList.Where(x => x.Id == ProductId).FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
+
+
+
+
+
+        // product = await ProductServices.GetProductByIdAsync(ProductId);
+        // HttpClient client = new HttpClient();
+        // var request = new HttpRequestMessage
+        //     {
+        //         Method = HttpMethod.Get,
+        //         RequestUri = new Uri("https://localhost:7124/api/MasterData/GetEnv"),
+        //         // Headers =
+        //         //     {
+        //         //          { "content-type", "application/x-www-form-urlencoded" },
+        //         //     },
+        //         //Content = new StringContent("sObject=" + serializedobjectvs, Encoding.UTF8, "application/x-www-form-urlencoded")
+        //     };
+
+        // var response = await client.SendAsync(request);
+
+        // var data = string.Empty;
+
+        // if (response.IsSuccessStatusCode)
+        // {
+        //     data = await response.Content.ReadAsStringAsync();
+        // }
+    }
+
+    private void AddToCart(int productId)
+    {
+        try
+        {
+            // List<Product> CartProductss = new List<Product>();
+            // Product CartProduct = new Product();
+            // CartProduct = ProductList.Where(x => x.Id == ProductId).FirstOrDefault();
+
+            // CartProductss.Add(CartProduct);
+
+            // CartProducts = CartProductss;
+
+            // Json = JsonConvert.SerializeObject(CartProducts);
+            // Preferences.Default.Set("CartProducts", Json);
+
+            CartService.AddToCart(product, quantity);
+
+            NavigationManager.NavigateTo("/Cart");
+        }
+        catch (Exception ex)
+        {
+            
+            throw;
+        }        
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/ProductsList");
+    }
+}
